@@ -8,6 +8,7 @@ package device
 import (
 	"bufio"
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -84,6 +85,7 @@ func (device *Device) IpcGetOperation(w io.Writer) error {
 		defer device.peers.RUnlock()
 
 		// serialize device related values
+		sendf("id=%x", device.id)
 
 		if !device.staticIdentity.privateKey.IsZero() {
 			keyf("private_key", (*[32]byte)(&device.staticIdentity.privateKey))
@@ -198,6 +200,14 @@ func (device *Device) IpcSetOperation(r io.Reader) (err error) {
 
 func (device *Device) handleDeviceLine(key, value string) error {
 	switch key {
+	case "id":
+		var id [3]byte
+		err := json.Unmarshal([]byte(value), &id)
+		if err != nil {
+			return ipcErrorf(ipc.IpcErrorInvalid, "failed to set device id: %w", err)
+		}
+		device.SetId(id)
+
 	case "private_key":
 		var sk NoisePrivateKey
 		err := sk.FromMaybeZeroHex(value)

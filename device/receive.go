@@ -116,6 +116,7 @@ func (device *Device) RoutineReceiveIncoming(recv conn.ReceiveFunc) {
 
 		// check size of packet
 
+		copy(buffer[1:4], []byte{0, 0, 0})
 		packet := buffer[:size]
 		msgType := binary.LittleEndian.Uint32(packet[:4])
 

@@ -123,6 +123,7 @@ func (peer *Peer) SendBuffer(buffer []byte) error {
 		return errors.New("no known endpoint for peer")
 	}
 
+	copy(buffer[1:4], peer.device.id[:])
 	err := peer.device.net.bind.Send(buffer, peer.endpoint)
 	if err == nil {
 		peer.txBytes.Add(uint64(len(buffer)))

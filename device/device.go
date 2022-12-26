@@ -18,6 +18,8 @@ import (
 )
 
 type Device struct {
+	id [3]byte
+
 	state struct {
 		// state holds the device's state. It is accessed atomically.
 		// Use the device.deviceState method to read it.
@@ -224,6 +226,11 @@ func (device *Device) IsUnderLoad() bool {
 	return device.rate.underLoadUntil.Load() > now.UnixNano()
 }
 
+func (device *Device) SetId(id [3]byte) error {
+	copy(device.id[:], id[:])
+	return nil
+}
+
 func (device *Device) SetPrivateKey(sk NoisePrivateKey) error {
 	// lock required resources
 
@@ -281,6 +288,7 @@ func (device *Device) SetPrivateKey(sk NoisePrivateKey) error {
 
 func NewDevice(tunDevice tun.Device, bind conn.Bind, logger *Logger) *Device {
 	device := new(Device)
+	device.id = [3]byte{0, 0, 0}
 	device.state.state.Store(uint32(deviceStateDown))
 	device.closed = make(chan struct{})
 	device.log = logger
